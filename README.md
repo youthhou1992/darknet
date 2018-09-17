@@ -1,14 +1,21 @@
-根据ssd代码，实现textbox
+#根据SSD代码，实现TextBoxes
+##ssd 代码地址：
+##TextBoxes论文地址:  
 
-已完成：
-    train
+##数据集  
+    ICDAR
+    
+##已完成  
+###train  
+    cd Textboxes/
+    sh train.sh
 
-待完善：
-    data argument
-    data transform
+##待完善  
+    data argument  
+    data transform  
     batch
 
-待支持：
-    test
-    eval
-    demo
+##待支持  
+    test  
+    eval  
+    demo  
