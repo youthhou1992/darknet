@@ -1,2 +1,5 @@
 /weights/
 /demo/weights/
+.idea/
+*/__pycache/
+__pycache/
