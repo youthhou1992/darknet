@@ -66,8 +66,8 @@ class ICDARData(data.Dataset):
         img = self.loader(img_name)
         if self.data_transforms:
             img = self.data_transforms(img)
-        print(img_name)
-        print(img.shape)
+        # print(img_name)
+        # print(img.shape)
         img = torch.from_numpy(img).permute(2,0,1)
         return img, target
 

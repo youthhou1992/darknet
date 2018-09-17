@@ -47,7 +47,7 @@ class PriorBox(object):
             for i, j in product(range(f), repeat=2):
                 f_k = self.image_size / self.steps[k]
                 # unit center x,y
-                cx = (j + 0.5) / f_k
+                cx = (j + 0.5) / f_k  #在原图中的相对位置
                 cy = (i + 0.5) / f_k
 
                 # 偏置的先验框

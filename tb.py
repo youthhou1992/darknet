@@ -2,7 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from layers.functions import prior_box
+#from layers.functions import prior_box
+#from layers.functions import detection
+from layers import *
 from layers.modules import l2norm
 from data import text
 import os
@@ -32,7 +34,7 @@ class TB(nn.Module):
         self.num_classes = num_classes
         #self.cfg = (coco, voc)[num_classes == 21]
         self.cfg = text
-        self.priorbox = prior_box.PriorBox(self.cfg)
+        self.priorbox = PriorBox(self.cfg)
         with torch.no_grad():
             self.priors = Variable(self.priorbox.forward())
         self.size = size
@@ -46,9 +48,9 @@ class TB(nn.Module):
         self.loc = nn.ModuleList(head[0])
         self.conf = nn.ModuleList(head[1])
 
-        # if phase == 'test':
-        #     self.softmax = nn.Softmax(dim=-1)
-        #     self.detect = Detect(num_classes, 0, 200, 0.01, 0.45) #在测试阶段，调用NMS函数
+        if phase == 'test':
+            self.softmax = nn.Softmax(dim=-1)
+            self.detect = Detect(num_classes, 0, 200, 0.01, 0.45) #在测试阶段，调用NMS函数
 
     def forward(self, x):
         """Applies network layers and ops on input image(s) x.
@@ -106,24 +108,24 @@ class TB(nn.Module):
         loc = torch.cat([o.view(o.size(0), -1) for o in loc], 1)
         #print('loc', loc)
         conf = torch.cat([o.view(o.size(0), -1) for o in conf], 1)
-        # if self.phase == "test":
-        #     output = self.detect(
-        #         loc.view(loc.size(0), -1, 4),                   # loc preds
-        #         self.softmax(conf.view(conf.size(0), -1,
-        #                      self.num_classes)),                # conf preds
-        #         self.priors.type(type(x.data))                  # default boxes
-        #     )
-        # else:
-        #     output = (
-        #         loc.view(loc.size(0), -1, 4),
-        #         conf.view(conf.size(0), -1, self.num_classes),
-        #         self.priors
-        #     )
-        output = (
-            loc.view(loc.size(0), -1, 4),
-            conf.view(conf.size(0), -1, self.num_classes),
-            self.priors
-        )
+        if self.phase == "test":
+            output = self.detect(
+                loc.view(loc.size(0), -1, 4),                   # loc preds
+                self.softmax(conf.view(conf.size(0), -1,
+                             self.num_classes)),                # conf preds
+                self.priors.type(type(x.data))                  # default boxes
+            )
+        else:
+            output = (
+                loc.view(loc.size(0), -1, 4),
+                conf.view(conf.size(0), -1, self.num_classes),
+                self.priors
+            )
+        # output = (
+        #     loc.view(loc.size(0), -1, 4),
+        #     conf.view(conf.size(0), -1, self.num_classes),
+        #     self.priors
+        # )
         return output
 
     def load_weights(self, base_file):
