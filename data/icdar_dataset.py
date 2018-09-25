@@ -26,6 +26,8 @@ def data_transform(img):
     '''图像处理
        resize: 300*300
     '''
+    mean = [104, 117, 123]
+    img = img - mean
     return cv2.resize(img, (300,300))
 
 class ICDARData(data.Dataset):
@@ -42,10 +44,12 @@ class ICDARData(data.Dataset):
         txt_dir = os.path.join(root, txt_path)
         self.img_list = []
         self.target_list = []
+        #self.ids = list()
         for im in os.listdir(img_dir):
             self.img_list.append(os.path.join(img_dir, im))
             txt_name = 'gt_' + im[:-4] + '.txt'
             gt_boxs  = []
+            #self.ids.append(os.path.join(txt_dir, txt_name))
             with open(os.path.join(txt_dir, txt_name), 'r') as f:
                 for line in f.readlines():
                     x_min, y_min, x_max, y_max = line.strip().split(',')[:4]
@@ -60,16 +64,21 @@ class ICDARData(data.Dataset):
         return len(self.img_list)
 
     def __getitem__(self, item):
+        img, target, h, w = self.pull_item(item)
+        return img, target
+
+    def pull_item(self, item):
         img_name = self.img_list[item]
-        #print(img_name)
+        # print(img_name)
         target = self.target_list[item]
         img = self.loader(img_name)
         if self.data_transforms:
             img = self.data_transforms(img)
-        # print(img_name)
-        # print(img.shape)
-        img = torch.from_numpy(img).permute(2,0,1)
-        return img, target
+        # to rgb
+        img = img[:, :, (2, 1, 0)]
+        img = torch.from_numpy(img).permute(2, 0, 1)
+        c, h, w = img.size()
+        return img, target, h, w
 
 if __name__ == '__main__':
 
@@ -77,4 +86,4 @@ if __name__ == '__main__':
     IMG_PATH = 'Challenge1_Training_Task12_Images'
     TXT_PATH = 'Challenge1_Training_Task1_GT'
     data = ICDARData(root = DATAROOT ,img_path = IMG_PATH, txt_path = TXT_PATH)
-    print(data[0][0])
+    print(data.pull_item(0))

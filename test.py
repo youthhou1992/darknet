@@ -85,7 +85,8 @@ def test_voc():
     print('Finished loading model!')
     # load data
     #testset = VOCDetection(args.voc_root, [('2007', 'test')], None, VOCAnnotationTransform())
-    testset = '/data/samples/ICDAR/Challenge1_Test_Task12_Images/'
+    #testset = '/data/samples/ICDAR/Challenge1_Test_Task12_Images/'
+    testset = '/data/samples/ICDAR/Challenge1_Training_Task12_Images/'
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True

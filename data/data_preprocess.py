@@ -13,7 +13,7 @@ def change_format(img_name):
         pass
 
 if __name__ == '__main__':
-    img_path = '/Users/youth/data/ICDAR/Challenge1_Training_Task12_Images'
+    img_path = '/data/samples/ICDAR/Challenge1_Test_Task12_Images'
     for image in os.listdir(img_path):
         #print(image)
         img_name = os.path.join(img_path, image)

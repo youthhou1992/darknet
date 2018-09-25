@@ -1,1 +1,1 @@
-python3 ./train.py --lr=1e-6 --resume='./weights/tb_ICDAR_40000.pth'
+python3 ./train.py --lr=1e-4
