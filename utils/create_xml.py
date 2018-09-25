@@ -19,7 +19,7 @@ class xmlCreator(object):
             imageName = ET.SubElement(image, 'imageName')
             imageName.text = img
             taggedRectangles = ET.SubElement(image, 'taggedRectangles')
-            for bbox in bbox_list:
+            for bbox in bbox_list[i]:
                 taggedRectangle = ET.SubElement(taggedRectangles, 'taggedRectangle')
                 taggedRectangle.attrib = bbox
         self.write_xml(tagset, save_path)

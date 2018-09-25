@@ -43,18 +43,21 @@ def eval_net(net, dataset, cuda, thresh):
             x = x.cuda()
         y = net(x)
         detections = y.data
-        scale = torch.Tensor(img.shape[1], img.shape[0],
-                             img.shape[1], img.shape[0])
+        scale = torch.Tensor([img.shape[1], img.shape[0],
+                             img.shape[1], img.shape[0]])
         i = 0
         single_box = []
         while(detections[0, 1, i, 0] >= thresh):
             pt = (detections[0, 1, i, 1:]*scale).cpu().numpy()
-            box = create_xml.point2center(pt)
+            box = [int(p) for p in pt]
+            box = create_xml.point2center(box)
+            #box = [int(x) for x in box]
             box.append('0')
             box = create_xml.box2dict(box, 'modelType')
             single_box.append(box)
+            i += 1
         det_bbox.append(single_box)
-        break
+        #break
     return det_img, det_bbox
 
 def deal_gt(img_list, txt_root):
@@ -64,6 +67,7 @@ def deal_gt(img_list, txt_root):
         img_id = img_id.split('_')[1]
         txt_path = 'gt_img_' + img_id + '.txt'
         txt_path = os.path.join(txt_root, txt_path)
+        single_box = []
         with open(txt_path, 'r') as f:
             for line in f.readlines():
                 box = line.strip().split(',')
@@ -72,14 +76,15 @@ def deal_gt(img_list, txt_root):
                 box = create_xml.point2center(box)
                 box.append('1')
                 box = create_xml.box2dict(box, 'offset')
-                gt_bbox.append(box)
-            print (gt_bbox)
+                single_box.append(box)
+            #print (gt_bbox)
             #break
-        break
+        gt_bbox.append(single_box)
+        #break
     return img_list, gt_bbox
 
 
-def eval():
+def eval_model():
     #加载网络
     net = tb.build_tb('test')
     #加载模型
@@ -98,9 +103,12 @@ def eval():
     det_img, det_bbox = eval_net(net, img_root, args.cuda, thresh = args.visual_threshold)
     #gt_img = det_img
     gt_img, gt_bbox = deal_gt(det_img, txt_root)
+    print(gt_bbox)
+    print(det_bbox)
     xml_creator = create_xml.xmlCreator()
     xml_creator.create_xml(det_path, det_img, det_bbox)
     xml_creator.create_xml(gt_path, gt_img, gt_bbox)
 
 if __name__ == '__main__':
-    eval()
+    eval_model()
+    ##############
