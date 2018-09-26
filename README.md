@@ -27,10 +27,8 @@
     data argument  
     data transform  
         resize
-        subtract mean
+        substract mean
     batch
 
-## 待支持  
-    test  
-    eval  
+## 待支持    
     demo  

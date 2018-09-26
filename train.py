@@ -163,7 +163,7 @@ def train():
             images, targets = next(batch_iterator)
         except Exception as e:
             print("loading dta exception", e)
-
+        #print(images.type())
         if args.cuda:
             images = Variable(images.cuda())
             with torch.no_grad():
@@ -174,6 +174,7 @@ def train():
                 targets = [Variable(ann) for ann in targets]
         # forward
         t0 = time.time()
+        #print(images.type())
         out = net(images)
         # backprop
         optimizer.zero_grad()

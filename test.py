@@ -1,18 +1,14 @@
 from __future__ import print_function
-import sys
 import os
 import argparse
 import torch
-import torch.nn as nn
 import torch.backends.cudnn as cudnn
-import torchvision.transforms as transforms
 from torch.autograd import Variable
-import torch.utils.data as data
 from tb import build_tb
 from data import text as cfg
 import cv2
 import numpy as np
-import draw_boxes
+from utils import draw_boxes
 
 parser = argparse.ArgumentParser(description='Single Shot MultiBox Detection')
 parser.add_argument('--trained_model', default='weights/tb_80000.pth',

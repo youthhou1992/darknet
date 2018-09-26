@@ -98,8 +98,8 @@ def eval_model():
     #eval dataset
     img_root = '/data/samples/ICDAR/Challenge1_Test_Task12_Images'
     txt_root = '/data/samples/ICDAR/Challenge1_Test_Task1_GT'
-    det_path = './det.xml'
-    gt_path = './gt.xml'
+    det_path = 'result/det.xml'
+    gt_path = 'result/gt.xml'
     det_img, det_bbox = eval_net(net, img_root, args.cuda, thresh = args.visual_threshold)
     #gt_img = det_img
     gt_img, gt_bbox = deal_gt(det_img, txt_root)

@@ -77,6 +77,7 @@ class ICDARData(data.Dataset):
         # to rgb
         img = img[:, :, (2, 1, 0)]
         img = torch.from_numpy(img).permute(2, 0, 1)
+        img = img.type(torch.FloatTensor)
         c, h, w = img.size()
         return img, target, h, w
 
