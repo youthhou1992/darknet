@@ -5,7 +5,6 @@ import tb
 import torch.backends.cudnn as cudnn
 import numpy as np
 from torch.autograd import Variable
-from utils import create_xml
 
 '''
     use DetEval calculated recall, precision, F1 score
@@ -26,6 +25,7 @@ if args.cuda and torch.cuda.is_available():
 else:
     torch.set_default_tensor_type('torch.FloatTensor')
 
+mean = [104, 117, 123]
 #if not os.path.exists(args.sa)
 def eval_net(net, dataset, cuda, thresh):
     det_bbox = []
@@ -34,10 +34,12 @@ def eval_net(net, dataset, cuda, thresh):
         det_img.append(image)
         img_path = os.path.join(dataset, image)
         img = cv2.imread(img_path)
-        img = img[:, :, (2, 1, 0)]
+        img = np.array(img, np.float32)
+        img = img - mean
         img_resized = cv2.resize(img, (300, 300))
-        img = np.array(img_resized, np.float32)
+        img = img_resized[:, :, (2, 1, 0)]
         x = torch.from_numpy(img).permute(2, 0, 1)
+        x = x.type(torch.FloatTensor)
         x = Variable(x.unsqueeze(0))
         if cuda:
             x = x.cuda()
@@ -50,38 +52,24 @@ def eval_net(net, dataset, cuda, thresh):
         while(detections[0, 1, i, 0] >= thresh):
             pt = (detections[0, 1, i, 1:]*scale).cpu().numpy()
             box = [int(p) for p in pt]
-            box = create_xml.point2center(box)
-            #box = [int(x) for x in box]
-            box.append('0')
-            box = create_xml.box2dict(box, 'modelType')
             single_box.append(box)
             i += 1
         det_bbox.append(single_box)
         #break
     return det_img, det_bbox
 
-def deal_gt(img_list, txt_root):
-    gt_bbox = []
-    for img in img_list:
-        img_id = img.split('.')[0]
-        img_id = img_id.split('_')[1]
-        txt_path = 'gt_img_' + img_id + '.txt'
-        txt_path = os.path.join(txt_root, txt_path)
-        single_box = []
-        with open(txt_path, 'r') as f:
-            for line in f.readlines():
-                box = line.strip().split(',')
-                box = box[:4]
-                box = [eval(x) for x in box]
-                box = create_xml.point2center(box)
-                box.append('1')
-                box = create_xml.box2dict(box, 'offset')
-                single_box.append(box)
-            #print (gt_bbox)
-            #break
-        gt_bbox.append(single_box)
+def write2txt(res_root, img, bboxs):
+    for i, im in enumerate(img):
+        img_id = im.split('.')[0]
+        txt_path = os.path.join(res_root, 'res_' + img_id + '.txt')
+        print(txt_path)
+        bbox = bboxs[i]
+        print(bbox)
+        with open(txt_path, 'w') as f:
+            for box in bbox:
+                line = ','.join([str(int(box[0])), str(int(box[1])), str(int(box[2])), str(int(box[3]))]) + '\r\n'
+                f.write(line)
         #break
-    return img_list, gt_bbox
 
 
 def eval_model():
@@ -97,17 +85,12 @@ def eval_model():
         cudnn.benchmark = True
     #eval dataset
     img_root = '/data/samples/ICDAR/Challenge1_Test_Task12_Images'
-    txt_root = '/data/samples/ICDAR/Challenge1_Test_Task1_GT'
-    det_path = 'result/det.xml'
-    gt_path = 'result/gt.xml'
+    res_root = '/data/houyaozu/textbox/result'
+    # txt_root = '/data/samples/ICDAR/Challenge1_Test_Task1_GT'
+    # det_path = 'result/det.xml'
+    # gt_path = 'result/gt.xml'
     det_img, det_bbox = eval_net(net, img_root, args.cuda, thresh = args.visual_threshold)
-    #gt_img = det_img
-    gt_img, gt_bbox = deal_gt(det_img, txt_root)
-    print(gt_bbox)
-    print(det_bbox)
-    xml_creator = create_xml.xmlCreator()
-    xml_creator.create_xml(det_path, det_img, det_bbox)
-    xml_creator.create_xml(gt_path, gt_img, gt_bbox)
+    write2txt(res_root, det_img, det_bbox)
 
 if __name__ == '__main__':
     eval_model()

@@ -1,1 +1,0 @@
-python3 ./train.py --lr=1e-4 --resume='weights/tb_80000.pth'
